@@ -4,7 +4,42 @@ let modelViewMatrix;
 
 let eye = [0, 0, 0.1];
 let at = [0, 0, 0];
-let up = [0, 1, 0];
+let up = [0, 1, 0]; 
+
+document.onkeydown = handleKeyDown;
+
+function handleKeyDown(event) {
+    let key = String.fromCharCode(event.keyCode);
+    
+    switch (key) {
+        case 'T':
+            eye = [0, 0, 1]; // Top
+            break;
+        case 'L':
+            eye = [-1, 0, 0]; // Left
+            break;
+        case 'F':
+            eye = [0, 0, 0.1]; // Front
+            break;
+        case 'D':
+            rotateCamera(-1); // Rotate clockwise
+            break;
+        case 'A':
+            rotateCamera(1); // Rotate counter-clockwise
+            break;
+    }
+}
+
+function rotateCamera(theta) {
+    let cosTheta = Math.cos(theta);
+    let sinTheta = Math.sin(theta);
+    let newUpX = cosTheta * up[0] - sinTheta * up[1];
+    let newUpY = sinTheta * up[0] + cosTheta * up[1];
+    up[0] = newUpX;
+    up[1] = newUpY;
+}
+
+
 
 onload = () => {
     let canvas = document.getElementById("webgl-canvas");
@@ -69,7 +104,7 @@ onload = () => {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
     let vPosition = gl.getAttribLocation(program, 'vPosition');
-    gl.vertexAttribPointer(vPosition,3,gl.FLOAT,false,0,0);
+    gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPosition);
 
     let iBuffer = gl.createBuffer();
@@ -81,7 +116,7 @@ onload = () => {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
     let vColor = gl.getAttribLocation(program, 'vColor');
-    gl.vertexAttribPointer(vColor,3,gl.FLOAT,false,0,0);
+    gl.vertexAttribPointer(vColor, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vColor);
 
     modelViewMatrix = gl.getUniformLocation(program, 'modelViewMatrix');
@@ -89,16 +124,14 @@ onload = () => {
     render();
 };
 
-
 function render() { 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    mvm = lookAt(eye, at, up);
+    let mvm = lookAt(eye, at, up);
 
-    gl.uniformMatrix4fv(modelViewMatrix, false,
-    flatten(mvm));
+    gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
 
     gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_BYTE, 0);
 
-    // requestAnimationFrame(render);
+    requestAnimationFrame(render);
 }
