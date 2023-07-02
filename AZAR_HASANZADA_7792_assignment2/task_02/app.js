@@ -95,8 +95,6 @@ onload = () => {
         1, 1, 1,
     ];
 
-    vertices = scale(0.5, vertices)
-
     let vBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -124,13 +122,13 @@ onload = () => {
 };
 
 function render() {
-    // Clipping volume parameters (scaled down)
-    let left = -1;
-    let right = 1;
-    let bottom = -1;
-    let top = 1;
-    let near = -5;
-    let far = 5;
+    // Clipping volume parameters (updated)
+    let left = -2;
+    let right = 2;
+    let bottom = -2;
+    let top = 2;
+    let near = -10;
+    let far = 10;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     let mvm = lookAt(eye, at, up);
