@@ -3,16 +3,17 @@ let vertexCount = 36;
 let modelViewMatrix;
 let projectionMatrix;
 
-let eye = [0, 0, 0.1];
-let at = [0, 0, 0];
-let up = [0, 1, 0];
+let eye = vec3(0, 0, 2);
+let at = vec3(0, 0, 0);
+let up = vec3(0, 1, 0);
 
 let left = -2;
 let right = 2;
 let bottom = -2;
 let ytop = 2;
-let near = -10;
+let near = 1;
 let far = 10;
+
 let zoomFactor = 0.1;
 
 document.onkeydown = handleKeyDown;
@@ -22,22 +23,26 @@ function handleKeyDown(event) {
 
   switch (key) {
     case 'T':
-      eye = [0, 0, 1]; // Top
+      eye = vec3(0, 1, 0); // Top
+      up = vec3(0, 0, 1);
       break;
     case 'L':
-      eye = [-1, 0, 0]; // Left
+      eye = vec3(-1, 0, 0); // Left
+      up = vec3(0, 1, 0);
       break;
     case 'F':
-      eye = [0, 0, 0.1]; // Front
+      eye = vec3(0, 0, 1); // Front
+      up = vec3(1, 0, 0);
       break;
     case 'D':
-      rotateCamera(-1); // Rotate clockwise
+      rotateCamera(0.5); // Rotate clockwise
       break;
     case 'A':
-      rotateCamera(1); // Rotate counter-clockwise
+      rotateCamera(-0.5); // Rotate counter-clockwise
       break;
     case 'I':
-      eye = [1, 1, 1]; // Isometric
+      eye = vec3(2, 2, 2); // Isometric
+      up = vec3(0, 1, 0); // Reset up vector for isometric view
       break;
     case 'W':
       zoomIn(); // Zoom in
@@ -49,26 +54,32 @@ function handleKeyDown(event) {
 }
 
 function rotateCamera(theta) {
-  let cosTheta = Math.cos(theta);
-  let sinTheta = Math.sin(theta);
-  let newUpX = cosTheta * up[0] - sinTheta * up[1];
-  let newUpY = sinTheta * up[0] + cosTheta * up[1];
-  up[0] = newUpX;
-  up[1] = newUpY;
+  let cos_t = Math.cos(theta);
+  let sin_t = Math.sin(theta);
+
+  let new_X = cos_t * eye[0] - sin_t * eye[1];
+  let new_Y = sin_t * eye[0] + cos_t * eye[1];
+  eye[0] = new_X;
+  eye[1] = new_Y;
+
+  let mvm = lookAt(eye, at, up);
+  gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
+
+  render();
 }
 
 function zoomIn() {
-  left += zoomFactor;
-  right -= zoomFactor;
-  bottom += zoomFactor;
-  ytop -= zoomFactor;
+  // zoom in camera
+  eye[0] *= 0.9;
+  eye[1] *= 0.9;
+  eye[2] *= 0.9;
 }
 
 function zoomOut() {
-  left -= zoomFactor;
-  right += zoomFactor;
-  bottom -= zoomFactor;
-  ytop += zoomFactor;
+  // zoom out camera
+  eye[0] *= 1.1;
+  eye[1] *= 1.1;
+  eye[2] *= 1.1;
 }
 
 onload = () => {
@@ -156,7 +167,7 @@ function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   let mvm = lookAt(eye, at, up);
-  let pm = ortho(left, right, bottom, ytop, near, far);
+  let pm = perspective(45, gl.canvas.width / gl.canvas.height, near, far);
 
   gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
   gl.uniformMatrix4fv(projectionMatrix, false, flatten(pm));
