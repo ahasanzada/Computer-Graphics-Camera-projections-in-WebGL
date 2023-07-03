@@ -13,30 +13,59 @@ function handleKeyDown(event) {
     
     switch (key) {
         case 'T':
-            eye = [0, 0, 1]; // Top
+            eye = [0, 1, 0]; // Top
+            up = [0, 0, 1];
             break;
         case 'L':
             eye = [-1, 0, 0]; // Left
+            up = [0, 1, 0];
             break;
         case 'F':
-            eye = [0, 0, 0.1]; // Front
+            eye = [0, 0, 1]; // Front
+            up = [0, 1, 0];
             break;
         case 'D':
-            rotateCamera(-1); // Rotate clockwise
+            theta= 0.2
+            rotateCamera(theta); // Rotate clockwise
             break;
         case 'A':
-            rotateCamera(1); // Rotate counter-clockwise
+            theta=-0.2
+            rotateCamera(theta); // Rotate counter-clockwise
             break;
     }
 }
 
 function rotateCamera(theta) {
-    let cosTheta = Math.cos(theta);
-    let sinTheta = Math.sin(theta);
-    let newUpX = cosTheta * up[0] - sinTheta * up[1];
-    let newUpY = sinTheta * up[0] + cosTheta * up[1];
-    up[0] = newUpX;
-    up[1] = newUpY;
+
+  let cos_t = Math.cos(theta);
+  let sin_t = Math.sin(theta);
+
+  if (eye[0] === 0 && eye[1] === 1 && eye[2] === 0) {
+
+    let new_Z = cos_t * up[2] - sin_t * up[0];
+    let new_X = sin_t * up[2] + cos_t * up[0];
+    up[0] = new_X;
+    up[2] = new_Z;
+  } else if (eye[0] === -1 && eye[1] === 0 && eye[2] === 0) {
+
+    let new_Z = cos_t * up[2] - sin_t * up[1];
+    let new_Y = sin_t * up[2] + cos_t * up[1];
+    up[1] = new_Y;
+    up[2] = new_Z;
+  } else {
+
+    let new_X = cos_t * up[0] - sin_t * up[1];
+    let new_Y = sin_t * up[0] + cos_t * up[1];
+    up[0] = new_X;
+    up[1] = new_Y;
+  }
+
+
+  let mvm = lookAt(eye, at, up);
+  gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
+
+
+  render();
 }
 
 
