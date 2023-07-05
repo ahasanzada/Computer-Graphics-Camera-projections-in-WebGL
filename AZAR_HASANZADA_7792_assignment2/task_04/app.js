@@ -54,19 +54,34 @@ function handleKeyDown(event) {
 }
 
 function rotateCamera(theta) {
+
   let cos_t = Math.cos(theta);
   let sin_t = Math.sin(theta);
 
-  let new_X = cos_t * eye[0] - sin_t * eye[1];
-  let new_Y = sin_t * eye[0] + cos_t * eye[1];
-  eye[0] = new_X;
-  eye[1] = new_Y;
+  if (eye[0] === 0 && eye[1] === 1 && eye[2] === 0) {
 
-  let mvm = lookAt(eye, at, up);
-  gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
+    let new_Z = cos_t * up[2] - sin_t * up[0];
+    let new_X = sin_t * up[2] + cos_t * up[0];
+    up[0] = new_X;
+    up[2] = new_Z;
+  } else if (eye[0] === -1 && eye[1] === 0 && eye[2] === 0) {
 
-  render();
-}
+    let new_Z = cos_t * up[2] - sin_t * up[1];
+    let new_Y = sin_t * up[2] + cos_t * up[1];
+    up[1] = new_Y;
+    up[2] = new_Z;
+  } else {
+
+    let new_X = cos_t * up[0] - sin_t * up[1];
+    let new_Y = sin_t * up[0] + cos_t * up[1];
+    up[0] = new_X;
+    up[1] = new_Y;
+  }
+    let mvm = lookAt(eye, at, up);
+    gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
+  
+    render();
+  }
 
 function zoomIn() {
   // zoom in camera
