@@ -3,7 +3,7 @@ let vertexCount = 36;
 let modelViewMatrix;
 let projectionMatrix;
 
-let eye = vec3(0, 0, 2);
+let eye = vec3(0, 0, 1);
 let at = vec3(0, 0, 0);
 let up = vec3(0, 1, 0);
 
@@ -11,8 +11,44 @@ let left = -2;
 let right = 2;
 let bottom = -2;
 let ytop = 2;
-let near = 1;
-let far = 10;
+let near = -100;
+let far = 100;
+
+let near_perspective=1
+
+let vertices = [
+  -1, -1, 1,
+  -1, 1, 1,
+  1, 1, 1,
+  1, -1, 1,
+  -1, -1, -1,
+  -1, 1, -1,
+  1, 1, -1,
+  1, -1, -1,
+];
+
+let vertices2 = [ 
+  3, -1, -1,
+  3, 1, -1,
+  5, 1, -1, 
+  5, -1, -1, 
+  3, -1, -3, 
+  3, 1, -3, 
+  5, 1, -3, 
+  5, -1, -3, 
+];
+
+function CreateCube(vertex){
+  let vBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex), gl.STATIC_DRAW);
+
+  let vPosition = gl.getAttribLocation(program, 'vPosition');
+  gl.vertexAttribPointer(vPosition, 3, gl.FLOAT, false, 0, 0);
+  gl.enableVertexAttribArray(vPosition);
+
+  gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_BYTE, 0);
+}
 
 let zoomFactor = 0.1;
 
@@ -32,7 +68,7 @@ function handleKeyDown(event) {
       break;
     case 'F':
       eye = vec3(0, 0, 1); // Front
-      up = vec3(1, 0, 0);
+      up = vec3(0, 1, 0);
       break;
     case 'D':
       rotateCamera(0.5); // Rotate clockwise
@@ -45,13 +81,28 @@ function handleKeyDown(event) {
       up = vec3(0, 1, 0); // Reset up vector for isometric view
       break;
     case 'W':
-      zoomIn(); // Zoom in
+      if (Default === 'orthogonal') {
+        zoomIn_Ortho();
+      } else {
+        zoomIn();
+      }
       break;
     case 'S':
-      zoomOut(); // Zoom out
+      if (Default === 'orthogonal') {
+        zoomOut_Ortho();
+      } else {
+        zoomOut();
+      }
+      break;
+    case 'O':
+      Default = 'orthogonal'; // Switch to orthographic view
+      break;
+    case 'P':
+      Default = 'perspective'; // Switch to perspective view
       break;
   }
 }
+
 
 function rotateCamera(theta) {
 
@@ -82,6 +133,20 @@ function rotateCamera(theta) {
   
     render();
   }
+
+function zoomIn_Ortho() {
+  left += zoomFactor;
+  right -= zoomFactor;
+  bottom += zoomFactor;
+  ytop -= zoomFactor;
+}
+
+function zoomOut_Ortho() {
+  left -= zoomFactor;
+  right += zoomFactor;
+  bottom -= zoomFactor;
+  ytop += zoomFactor;
+}
 
 function zoomIn() {
   // zoom in camera
@@ -115,16 +180,7 @@ onload = () => {
 
   gl.clearColor(0, 0, 0, 0.5);
 
-  let vertices = [
-    -1, -1, 1,
-    -1, 1, 1,
-    1, 1, 1,
-    1, -1, 1,
-    -1, -1, -1,
-    -1, 1, -1,
-    1, 1, -1,
-    1, -1, -1,
-  ];
+
 
   let indices = [
     0, 3, 1,
@@ -178,16 +234,26 @@ onload = () => {
   render();
 };
 
+let Default='orthogonal'
+
 function render() {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   let mvm = lookAt(eye, at, up);
-  let pm = perspective(45, gl.canvas.width / gl.canvas.height, near, far);
+  let pm;
+
+  if (Default === 'orthogonal') {
+    pm = ortho(left, right, bottom, ytop, near, far);
+  } else {
+    pm = perspective(45, gl.canvas.width / gl.canvas.height, near_perspective, far);
+  }
 
   gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
   gl.uniformMatrix4fv(projectionMatrix, false, flatten(pm));
 
-  gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_BYTE, 0);
+  CreateCube(vertices);
+  CreateCube(vertices2);
 
   requestAnimationFrame(render);
 }
+

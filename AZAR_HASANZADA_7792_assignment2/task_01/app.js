@@ -61,10 +61,6 @@ function rotateCamera(theta) {
   }
 
 
-  let mvm = lookAt(eye, at, up);
-  gl.uniformMatrix4fv(modelViewMatrix, false, flatten(mvm));
-
-
   render();
 }
 
